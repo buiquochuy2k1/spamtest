@@ -356,11 +356,10 @@ async function sendRandomMessage() {
 
 // -----------
 // 👇 Chỉnh số lần gửi ở đây
-const times = 99999;
+const times = 99999999;
 
 (async () => {
   for (let i = 0; i < times; i++) {
     await sendRandomMessage();
-	sleep(500)
   }
 })();
