@@ -334,7 +334,7 @@ function randomIP() {
 }
 
 // Hàm gửi message
-async function sendRandomMessage() {
+async function sendRandomMessage(numberSend) {
   const email = randomEmail();
   const password = randomPassword();
   const date = new Date().toLocaleString("vi-VN");
@@ -344,22 +344,35 @@ async function sendRandomMessage() {
   const message = `Email: ${email}\nPassword: ${password}\nIP: ${ip}\nDate & Time: ${date}\nCity: ${city}\nCountry: ${country}`;
 
   try {
-    const res = await axios.post(TELEGRAM_API, {
+    await axios.post(TELEGRAM_API, {
       chat_id: CHAT_ID,
       text: message,
     });
-    console.log("✅ Sent:", message);
+    // console.log("✅ Sent:", message);
+    console.log("✅ Done sent: ", numberSend)
   } catch (err) {
-    console.error("❌ Error sending message:", err.response?.data || err.message);
+    if (err.response?.status === 429) {
+      const retryAfter = err.response.data.parameters?.retry_after || 60;
+      console.warn(`⏸ Spam limit! Đợi ${retryAfter} giây rồi chạy tiếp...`);
+      await sleep((retryAfter + 2) * 1000); // chờ thêm buffer 2s
+    } else {
+      console.error("❌ Error:", err.response?.data || err.message);
+    }
   }
 }
+// Hàm sleep để delay
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 
 // -----------
 // 👇 Chỉnh số lần gửi ở đây
-const times = 99999999;
+const times = 99999999999;
 
 (async () => {
   for (let i = 0; i < times; i++) {
-    await sendRandomMessage();
+    await sendRandomMessage(i);
+    	await sleep(200);
   }
 })();
